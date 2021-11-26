@@ -8,7 +8,8 @@ class HandleFile(object):
 
     @staticmethod
     def read_file():
-        pass
+        p = pandas.read_excel("../template/zh.xlsx")
+        return [row for index, row in p.itertuples()]
 
     def writ_file(self):
         pass
