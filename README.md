@@ -9,9 +9,15 @@
 
 ### 使用说明
 
-1.   安装node.js 并设置环境变量 按照下面这个连接的教材来就可以了
+1. 安装node.js 并设置环境变量 按照下面这个连接的教材来就可以了
 
-      https://www.jb51.net/article/202203.htm
+    https://www.jb51.net/article/202203.htm
+
+   安装好node.js  切换到util\x-zse-96目录下执行以下命令 出现
+
+   ```vue
+   npm install jsdom
+   ```
 
 2. 安装python的模块
 
