@@ -14,13 +14,23 @@ class HandleFile(object):
 
     def writ_file(self, data, file_name):
         _cur_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-
+        # if type == "account":
         account_info_path = os.path.join(_cur_dir, "results/{}.xlsx".format(file_name))
         if os.path.exists(account_info_path):
             vaildip_data = pd.read_excel(account_info_path)
-            append_data = vaildip_data.append(data, ignore_index=True)
+            add_df = pd.DataFrame(data)
+            append_data = vaildip_data.append(add_df, ignore_index=True)
             append_data.to_excel(account_info_path, index=False)
         else:
             pd_data = pd.DataFrame(data)
             pd_data.to_excel(account_info_path, index=False)
-
+        # elif type == "article":
+        #     account_info_path = os.path.join(_cur_dir, "results/{}.xlsx".format(file_name))
+        #     if os.path.exists(account_info_path):
+        #         vaildip_data = pd.read_excel(account_info_path)
+        #         add_df=pd.DataFrame(data)
+        #         append_data = vaildip_data.append(add_df, ignore_index=True)
+        #         append_data.to_excel(account_info_path, index=False)
+        #     else:
+        #         pd_data = pd.DataFrame(data)
+        #         pd_data.to_excel(account_info_path, index=False)

@@ -64,8 +64,3 @@ def gen_header(url_part,d_c0='"AHCfcI0r9BKPTowWLggkfMGi5uRMk3Xf-rw=|1618403625"'
         # "x-zse-96": "2.0_aXY8c7X06M2pS_F0ZCFqNgeqcLxxHqtqzBO8Ser0SXOf"
     }
     return header
-
-if __name__ == '__main__':
-    headers = gen_header(
-        "/api/v4/members/chen-shao-neo/answers?include=data[*].is_normal,admin_closed_comment,reward_info,is_collapsed,annotation_action,annotation_detail,collapse_reason,collapsed_by,suggest_edit,comment_count,can_comment,content,editable_content,attachment,voteup_count,reshipment_settings,comment_permission,mark_infos,created_time,updated_time,review_info,excerpt,is_labeled,label_info,relationship.is_authorized,voting,is_author,is_thanked,is_nothelp,is_recognized;data[*].vessay_info;data[*].author.badge[?(type=best_answerer)].topics;data[*].author.vip_info;data[*].question.has_publishing_draft,relationship&offset=0&limit=20&sort_by=created",
-        "")

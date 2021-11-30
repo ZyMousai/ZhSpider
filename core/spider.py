@@ -50,14 +50,14 @@ class ZhSpider(object):
         answer_count = people_info['answerCount']
         print("抓取{}基础信息成功！".format(self.account_name))
         user_data = {
-            "账号名称": self.account_name,
-            "职业经历": employment_record,
-            "个人简介": description,
-            "粉丝数": followersCount,
-            "点赞总数": like_total_count,
-            "认证状态": authentication_info,
-            "文章总数": articles_count,
-            "回答总数": answer_count,
+            "账号名称": [self.account_name],
+            "职业经历": [str(employment_record)],
+            "个人简介": [description],
+            "粉丝数": [followersCount],
+            "点赞总数": [like_total_count],
+            "认证状态": [authentication_info],
+            "文章总数": [articles_count],
+            "回答总数": [answer_count],
         }
         self.hf.writ_file(user_data, "account_info")
         self.write_data(answer_count, url_token, articles_count, cookie)
@@ -66,10 +66,9 @@ class ZhSpider(object):
         answer_pool = []
         print("开始抓取回答问题数据,总共{}页".format(str(math.ceil(answer_count / 20))))
         for i in range(math.ceil(answer_count / 20)):
-            answers_url = "https://www.zhihu.com/api/v4/members/{}/answers?include=data%5B*%5D.is_normal%2Cadmin_closed_comment%2Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cattachment%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Cmark_infos%2Ccreated_time%2Cupdated_time%2Creview_info%2Cexcerpt%2Cis_labeled%2Clabel_info%2Crelationship.is_authorized%2Cvoting%2Cis_author%2Cis_thanked%2Cis_nothelp%2Cis_recognized%3Bdata%5B*%5D.vessay_info%3Bdata%5B*%5D.author.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B*%5D.author.vip_info%3Bdata%5B*%5D.question.has_publishing_draft%2Crelationship&offset={}&limit=20&sort_by=created".format(url_token, 20 * i)
-            # answers_url = "https://www.zhihu.com/api/v4/members/{}/answers?include=data%5B*%5D.is_normal%2Cadmin_closed_comment%2Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cattachment%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Cmark_infos%2Ccreated_time%2Cupdated_time%2Creview_info%2Cexcerpt%2Cis_labeled%2Clabel_info%2Crelationship.is_authorized%2Cvoting%2Cis_author%2Cis_thanked%2Cis_nothelp%2Cis_recognized%3Bdata%5B*%5D.vessay_info%3Bdata%5B*%5D.author.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B*%5D.author.vip_info%3Bdata%5B*%5D.question.has_publishing_draft%2Crelationship&offset=1000&limit=All&sort_by=created".format(url_token, 1000 * i)
-            self.zhihu_user_answer_info(answers_url, cookie)
-            # answer_pool.append(zhihu_spider_pool.submit(self.zhihu_user_answer_info, answers_url, cookie))
+            answers_url = "https://www.zhihu.com/api/v4/members/{}/answers?include=data%5B*%5D.is_normal%2Cadmin_closed_comment%2Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cattachment%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Cmark_infos%2Ccreated_time%2Cupdated_time%2Creview_info%2Cexcerpt%2Cis_labeled%2Clabel_info%2Crelationship.is_authorized%2Cvoting%2Cis_author%2Cis_thanked%2Cis_nothelp%2Cis_recognized%3Bdata%5B*%5D.vessay_info%3Bdata%5B*%5D.author.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B*%5D.author.vip_info%3Bdata%5B*%5D.question.has_publishing_draft%2Crelationship&offset={}&limit=20&sort_by=created".format(
+                url_token, 20 * i)
+            answer_pool.append(zhihu_spider_pool.submit(self.zhihu_user_answer_info, answers_url, cookie, i))
         wait(answer_pool, return_when=ALL_COMPLETED)
         print("回答问题数据抓取成功!")
         articles_pool = []
@@ -77,17 +76,18 @@ class ZhSpider(object):
         for i in range(math.ceil(articles_count / 20)):
             articles_url = "https://www.zhihu.com/api/v4/members/{}/articles?include=data%5B*%5D.is_normal%2Cadmin_closed_comment%2Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cattachment%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Cmark_infos%2Ccreated_time%2Cupdated_time%2Creview_info%2Cexcerpt%2Cis_labeled%2Clabel_info%2Crelationship.is_authorized%2Cvoting%2Cis_author%2Cis_thanked%2Cis_nothelp%2Cis_recognized%3Bdata%5B*%5D.vessay_info%3Bdata%5B*%5D.author.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B*%5D.author.vip_info%3Bdata%5B*%5D.question.has_publishing_draft%2Crelationship&offset={}&limit=20&sort_by=created".format(
                 url_token, 20 * i)
-            articles_pool.append(zhihu_spider_pool.submit(self.zhihu_user_articles_info, articles_url, cookie))
+            articles_pool.append(zhihu_spider_pool.submit(self.zhihu_user_articles_info, articles_url, cookie, i))
         wait(articles_pool, return_when=ALL_COMPLETED)
         print("文章数据抓取成功!")
         article_pool = []
         answers = self.article_infos['answers']
         self.article_infos['answers'] = []
         print("开始抓取回答问题文章内容,总共{}个".format(str(len(answers))))
-        for article in answers:
-            article_pool.append(zhihu_spider_pool.submit(self.zhihu_article_info, article, cookie))
+        for i, article in enumerate(answers):
+            article_pool.append(zhihu_spider_pool.submit(self.zhihu_article_info, article, cookie, i))
         wait(article_pool, return_when=ALL_COMPLETED)
-        # print("开始获取作者回答排名")
+        print("获取回答问题成功！")
+        # print("开始获取作者回答排名") (暂时不用)
         # for index, data in enumerate(self.article_infos['answers']):
         #     self.author_answer_ranking = []
         #     author_answer_ranking_pool = []
@@ -143,8 +143,9 @@ class ZhSpider(object):
         }
         self.hf.writ_file(writ_data, self.account_name)
 
-    def zhihu_user_answer_info(self, url, cookie):
+    def zhihu_user_answer_info(self, url, cookie, i):
         try:
+            print("开始抓取第{}页用户回答内容".format(str(i + 1)))
             url_port = url.split(".com")[1]
             headers = gen_header(url_port)
             headers["cookie"] = cookie
@@ -163,8 +164,9 @@ class ZhSpider(object):
         except Exception as e:
             print(e)
 
-    def zhihu_user_articles_info(self, url, cookie):
+    def zhihu_user_articles_info(self, url, cookie, i):
         try:
+            print("开始抓取第{}页用户文章内容".format(str(i + 1)))
             url_port = url.split(".com")[1]
             headers = gen_header(url_port)
             headers["cookie"] = cookie
@@ -181,8 +183,9 @@ class ZhSpider(object):
         except:
             pass
 
-    def zhihu_article_info(self, article, cookie):
+    def zhihu_article_info(self, article, cookie, i):
         try:
+            print("开始抓取第{}页文章内容".format(str(i + 1)))
             headers = {
                 "user-agent": random.choice(ua_list),
                 "cookie": cookie
@@ -199,22 +202,22 @@ class ZhSpider(object):
         except:
             pass
 
-    def zhihu_answer_ranking(self, url, cookie):
-        try:
-            time.sleep(1)
-            url_port = url.split(".com")[1]
-            headers = gen_header(url_port)
-            headers["cookie"] = cookie
-            req = requests.get(url, headers=headers, timeout=15)
-            answer_info_json_data = req.json()["data"]
-            for json_data in answer_info_json_data:
-                json_dict = {
-                    "user_id": json_data['id'],
-                    "voteup_count": json_data['voteup_count'],
-                }
-                self.author_answer_ranking.append(json_dict)
-        except Exception as e:
-            print(e)
+    # def zhihu_answer_ranking(self, url, cookie):
+    #     try:
+    #         time.sleep(1)
+    #         url_port = url.split(".com")[1]
+    #         headers = gen_header(url_port)
+    #         headers["cookie"] = cookie
+    #         req = requests.get(url, headers=headers, timeout=15)
+    #         answer_info_json_data = req.json()["data"]
+    #         for json_data in answer_info_json_data:
+    #             json_dict = {
+    #                 "user_id": json_data['id'],
+    #                 "voteup_count": json_data['voteup_count'],
+    #             }
+    #             self.author_answer_ranking.append(json_dict)
+    #     except Exception as e:
+    #         print(e)
 
     def run(self, urls, cookie):
         for url in urls:
