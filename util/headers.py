@@ -23,7 +23,7 @@ ua_list = [
 
 
 
-def gen_header(url_part,d_c0='"AHCfcI0r9BKPTowWLggkfMGi5uRMk3Xf-rw=|1618403625"', is_signature=True):
+def gen_header(url_part,d_c0='"AJCQRMQFsBOPTi8EM_O35D-gKCa_1Uu9Sc4=|1631010186"', is_signature=True):
     """
         init:
             cd x-zse-96/

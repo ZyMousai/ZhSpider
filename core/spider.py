@@ -1,6 +1,7 @@
 """zh spider 核心爬虫"""
 from concurrent.futures._base import ALL_COMPLETED, wait
 import time
+import re
 import requests
 from util.headers import gen_header, ua_list
 from lxml import etree
@@ -66,6 +67,7 @@ class ZhSpider(object):
         answer_pool = []
         print("开始抓取回答问题数据,总共{}页".format(str(math.ceil(answer_count / 20))))
         for i in range(math.ceil(answer_count / 20)):
+        # for i in range(5):
             answers_url = "https://www.zhihu.com/api/v4/members/{}/answers?include=data%5B*%5D.is_normal%2Cadmin_closed_comment%2Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cattachment%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Cmark_infos%2Ccreated_time%2Cupdated_time%2Creview_info%2Cexcerpt%2Cis_labeled%2Clabel_info%2Crelationship.is_authorized%2Cvoting%2Cis_author%2Cis_thanked%2Cis_nothelp%2Cis_recognized%3Bdata%5B*%5D.vessay_info%3Bdata%5B*%5D.author.badge%5B%3F%28type%3Dbest_answerer%29%5D.topics%3Bdata%5B*%5D.author.vip_info%3Bdata%5B*%5D.question.has_publishing_draft%2Crelationship&offset={}&limit=20&sort_by=created".format(
                 url_token, 20 * i)
             answer_pool.append(zhihu_spider_pool.submit(self.zhihu_user_answer_info, answers_url, cookie, i))
@@ -87,21 +89,6 @@ class ZhSpider(object):
             article_pool.append(zhihu_spider_pool.submit(self.zhihu_article_info, article, cookie, i))
         wait(article_pool, return_when=ALL_COMPLETED)
         print("获取回答问题成功！")
-        # print("开始获取作者回答排名") (暂时不用)
-        # for index, data in enumerate(self.article_infos['answers']):
-        #     self.author_answer_ranking = []
-        #     author_answer_ranking_pool = []
-        #     for i in range(math.ceil(data["article_answerCount"] / 5)):
-        #         articles_url = "https://www.zhihu.com/api/v4/questions/{}/answers?include=data%5B%2A%5D.is_normal%2Cadmin_closed_comment%2Creward_info%2Cis_collapsed%2Cannotation_action%2Cannotation_detail%2Ccollapse_reason%2Cis_sticky%2Ccollapsed_by%2Csuggest_edit%2Ccomment_count%2Ccan_comment%2Ccontent%2Ceditable_content%2Cattachment%2Cvoteup_count%2Creshipment_settings%2Ccomment_permission%2Ccreated_time%2Cupdated_time%2Creview_info%2Crelevant_info%2Cquestion%2Cexcerpt%2Cis_labeled%2Cpaid_info%2Cpaid_info_content%2Crelationship.is_authorized%2Cis_author%2Cvoting%2Cis_thanked%2Cis_nothelp%2Cis_recognized%3Bdata%5B%2A%5D.mark_infos%5B%2A%5D.url%3Bdata%5B%2A%5D.author.follower_count%2Cvip_info%2Cbadge%5B%2A%5D.topics%3Bdata%5B%2A%5D.settings.table_of_content.enabled&platform=desktop&sort_by=default".format(
-        #             str(data["article_user_id"]), 5 * i)
-        #         author_answer_ranking_pool.append(
-        #             zhihu_spider_pool.submit(self.zhihu_answer_ranking, articles_url, cookie))
-        #     wait(author_answer_ranking_pool, return_when=ALL_COMPLETED)
-        #     answer_ranking = sorted(self.author_answer_ranking, key=lambda x: x["voteup_count"], reverse=True)
-        #     for i, answer_info in enumerate(answer_ranking):
-        #         if str(answer_info["user_id"]) == str(data['article_url']).split("/")[-1]:
-        #             self.article_infos["answers"][index]["author_answer_ranking"] = i + 1
-        # print("获取作者回答排名成功！！")
         # 3. 输出
         article_titles = []
         article_urls = []
@@ -111,9 +98,11 @@ class ZhSpider(object):
         visit_counts = []
         article_answerCounts = []
         article_follower_counts = []
+        contents = []
         for data in self.article_infos["answers"]:
             article_titles.append(data.get("article_title", ""))
             article_urls.append(data.get("article_url", ""))
+            contents.append(data.get("content", ""))
             voteup_counts.append(data.get("voteup_count", 0))
             comment_counts.append(data.get("comment_count", 0))
             author_answer_ranking.append(data.get("author_answer_ranking", 0))
@@ -124,6 +113,7 @@ class ZhSpider(object):
         for data in self.article_infos["articles"]:
             article_titles.append(data.get("article_title", ""))
             article_urls.append(data.get("article_url", ""))
+            contents.append(data.get("content", ""))
             voteup_counts.append(data.get("voteup_count", 0))
             comment_counts.append(data.get("comment_count", 0))
             author_answer_ranking.append(data.get("author_answer_ranking", 0))
@@ -134,6 +124,7 @@ class ZhSpider(object):
         writ_data = {
             "内容标题": article_titles,
             "内容链接": article_urls,
+            "回答内容":contents,
             "点赞数": voteup_counts,
             "评论数": comment_counts,
             "作者回答排名": author_answer_ranking,
@@ -158,7 +149,8 @@ class ZhSpider(object):
                                                                                         json_data["id"]),
                     "article_user_id": json_data["question"]['id'],
                     "voteup_count": json_data['voteup_count'],
-                    'comment_count': json_data['comment_count']
+                    'comment_count': json_data['comment_count'],
+                    'content': self.striphtml(json_data['content'])
                 }
                 self.article_infos["answers"].append(json_dict)
         except Exception as e:
@@ -177,7 +169,8 @@ class ZhSpider(object):
                     "article_title": json_data['title'],
                     "article_url": json_data['url'],
                     "voteup_count": json_data['voteup_count'],
-                    'comment_count': json_data['comment_count']
+                    'comment_count': json_data['comment_count'],
+                    "content":self.striphtml(json_data['content'])
                 }
                 self.article_infos["articles"].append(json_dict)
         except:
@@ -204,11 +197,11 @@ class ZhSpider(object):
 
     # def zhihu_answer_ranking(self, url, cookie):
     #     try:
-    #         time.sleep(1)
     #         url_port = url.split(".com")[1]
     #         headers = gen_header(url_port)
     #         headers["cookie"] = cookie
     #         req = requests.get(url, headers=headers, timeout=15)
+    #         print(req.text)
     #         answer_info_json_data = req.json()["data"]
     #         for json_data in answer_info_json_data:
     #             json_dict = {
@@ -216,8 +209,15 @@ class ZhSpider(object):
     #                 "voteup_count": json_data['voteup_count'],
     #             }
     #             self.author_answer_ranking.append(json_dict)
+    #             self.count += 1
     #     except Exception as e:
+    #         print(self.count)
     #         print(e)
+
+
+    def striphtml(self,data):
+        p = re.compile(r'<.*?>')
+        return p.sub('', data)
 
     def run(self, urls, cookie):
         for url in urls:
