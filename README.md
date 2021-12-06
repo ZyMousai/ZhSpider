@@ -39,4 +39,8 @@
    python main.py
    ```
 
-   
+5. 在设置好cookie 抓取不到数据的时候 把util/headers.py中dc_0其中值替换一下
+
+   这个值可以在cookie中找到
+
+   ![image-20211204173017252](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20211204173017252.png)
