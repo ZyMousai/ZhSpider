@@ -43,4 +43,5 @@
 
    这个值可以在cookie中找到
 
-   ![image-20211204173017252](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20211204173017252.png)
+   ![](https://raw.githubusercontent.com/zyp0529/img/main/image-20211204173017252.png)
+
