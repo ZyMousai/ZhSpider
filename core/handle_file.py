@@ -22,4 +22,4 @@ class HandleFile(object):
             append_data.to_excel(account_info_path, index=False)
         else:
             pd_data = pd.DataFrame(data)
-            pd_data.to_excel(account_info_path, index=False)
+            pd_data.to_excel(account_info_path, index=False,engine='xlsxwriter')
